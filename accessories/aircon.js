@@ -360,14 +360,14 @@ class AirConAccessory extends BroadlinkRMAccessory {
 
   async monitorTemperature () {
     const { config, host, log, logLevel, name, state } = this;
-    const { temperatureFilePath, pseudoDeviceTemperature, w1DeviceID } = config;
+    const { temperatureFilePath, pseudoDeviceTemperature, w1DeviceID, hts2Device } = config;
 
     if (pseudoDeviceTemperature !== undefined) {return;}
 
     //Force w1 and file devices to a minimum 1 minute refresh
     if (w1DeviceID || temperatureFilePath) {config.temperatureUpdateFrequency = Math.max(config.temperatureUpdateFrequency,60);}
 
-    const device = getDevice({ host, log });
+    const device = hts2Device ? getDevice({ hts2Device, log }) : getDevice({ host, log });
 
     // Try again in a second if we don't have a device yet
     if (!device) {
@@ -426,7 +426,7 @@ class AirConAccessory extends BroadlinkRMAccessory {
 
   addTemperatureCallbackToQueue (callback) {
     const { config, host, logLevel, log, name, state } = this;
-    const { mqttURL, temperatureFilePath, w1DeviceID, noHumidity } = config;
+    const { mqttURL, temperatureFilePath, w1DeviceID, noHumidity, hts2Device } = config;
 
     // Clear the previous callback
     if (Object.keys(this.temperatureCallbackQueue).length > 1) {
@@ -465,7 +465,7 @@ class AirConAccessory extends BroadlinkRMAccessory {
 
     // Read temperature from Broadlink RM device
     // If the device is no longer available, use previous tempeature
-    const device = getDevice({ host, log });
+    const device = hts2Device ? getDevice({ hts2Device, log }) : getDevice({ host, log });
 
     if (!device || device.state === 'inactive') {
       if (device && device.state === 'inactive') {
